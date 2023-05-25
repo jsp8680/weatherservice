@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+button {
+			padding: 10px;
+			border: none;
+			background-color: #007bff;
+			color: #fff;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		button:hover {
+			background-color: #0056b3;
+		}
+		#login-btn {
+			margin-right: 10px;
+		}
+    #alert{
+      background-color: red;
+      color: white;
+      padding: 20px;
+    }
+    #doc-btn{
+      margin-left:15px;
+
+    }
+    #messages {
+    text-align: center;
+    }
+    #input{
+      display: block;
+      margin: 0 auto;
+    }
+    #send{
+      display: block;
+      margin: 10px auto;
+    }
+    #close{
+      display: block;
+      margin: 10px auto;
+    }
+    #messages-container{
+      height: 300px;
+      border: 5px solid #000;
+      border-radius:25px 0px 0px 25px;
+      overflow-y: scroll;
+      margin: 30px;
+    }
+    .message{
+      background-color: lightblue;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
+  </style>
+<head>
+  <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Service</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mt-3"><img id="logo" src="/images/download.png"><img>Weather Service</h1>
+    <a href="/login"><button id="login-btn">Login</button></a>
+		<a href="/register"><button id="register-btn">Register</button></a>
+    <a href="/documentation"><button id="doc-btn">Documentation</button></a>
+
+   
+    
+    <h2 style="background:lightblue;padding:10px;width:100%;border-radius:10px;"><i class="fa-solid fa-bolt-lightning" style="color:yellow"></i>&nbsp;Latest Weather Uploads:</h2>
+    <div id="alert">
+      <ul>
+        <% if (messageType && headline && sender) { %>
+          <p>Message Type: <%= messageType %></p>
+          <p>Headline: <%= headline %></p>
+          <p>Sender: <%= sender %></p>
+        <% } else { %>
+          <p>No active weather alerts at this time.</p>
+        <% } %>
+      </ul>
+    </div>
+
+    
+    <div style="display: flex; justify-content: left; align-items: left; overflow-x: auto;margin:50px">
+      <% videos.forEach((video) => { %>
+        <div style="margin: 10px; padding: 10px; background-color: lightblue; border-radius: 25px;">
+          <video  width="320" height="240" autoplay muted>
+            <source src="data:<%= video.contentType %>;base64,<%= video.data.toString('base64') %>" type="<%= video.contentType %>">
+          </video>
+                  
+          <div style="background-color: white; padding: 10px; border-radius: 25px; margin-top: 10px;">
+            <h2 style="text-align: center;"><%= video.name %></h2>
+            <p style="text-align: center;"><%= video.desc %></p>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div style="display:flex !important;margin:20px;overflow-x:scroll;overflow-y:hidden;">
+      <% images.forEach((image) => { %>
+        <img src='data:image.jpeg;base64,<%= image.data %>' style="border: 6px solid transparent;height:100px;width:100px;border-radius:25px;"></img>  
+      <% }) %>
+    </div>
+    <div class="row mt-3">
+      <% weatherData.forEach((data) => { %>
+        <div class="col-md-4">
+          <div class="card" style="background-image:url('/images/<%= data.city.toLowerCase() %>.jpg');background-size:cover;background-repeat: no-repeat;background-position:right;transition: background 300ms ease-in 200ms;">
+            <div class="card-header">
+              <%= data.city %>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title"><%= data.temperature %>°C</h5>
+              <% if (data.temperature < 10) { %>
+                <i class="fas fa-snowflake fa-5x"></i>
+              <% } else if (data.temperature > 25) { %>
+                <i class="fas fa-sun fa-5x"></i>
+              <% } else { %>
+                <i class="fas fa-cloud fa-5x"></i>
+              <% } %>
+              <p class="card-text">Humidity: <%= data.humidity %>%</p>
+            </div>
+          </div>
+        
+          <canvas id="myChart"></canvas>
+      
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  
+  <script>
+    // Get the weatherData from the server
+    const weatherData = JSON.parse('<%- JSON.stringify(weatherData) %>');
+    
+    // Extract the temperatures and cities
+    const temperatures = weatherData.map(data => data.temperature);
+    const cities = weatherData.map(data => data.city);
+    
+    // Create a new Chart object
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: cities,
+        datasets: [{
+          label: 'Temperature',
+          data: temperatures,
+          
+                strokeColor : "rgba(51, 51, 51, 1)",
+                pointColor : "rgba(255, 89, 114, 1)",
+                pointStrokeColor : "#fff",
+                pointHighlightFill : "#fff",
+                pointHighlightStroke : "rgba(151,187,205,1)",
+                maintainAspectRatio: false,
+                scaleFontColor: "#FFFFFF",
+                pointLabelFontColor : "#FFFFFF",
+                pointLabelFontSize : 30,
+          
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
+<center><h2>WebSocket Weather Service Chat Room</h2></center>
+
+<div id="messages-container">
+  <div id="messages"></div>
+</div>
+
+<input id="input" type="text" />
+<button id="send">Send</button>
+<button id="close">Close Connection</button>
+
+
+<script>
+  const socket = new WebSocket('ws://localhost:8080');
+  const messagesDiv = document.getElementById('messages');
+
+  socket.addEventListener('open', (event) => {
+    console.log('WebSocket connection opened');
+  });
+
+  socket.addEventListener('message', async (event) => {
+    const blob = await event.data;
+    const message = await blob.text(); // convert blob to string
+    console.log(`Received message: ${message}`);
+
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    messageElement.innerText = message;
+    messagesDiv.appendChild(messageElement);
+
+    // Scroll to the bottom of the messages container
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+
+  const sendButton = document.getElementById('send');
+  const inputField = document.getElementById('input');
+
+  sendButton.addEventListener('click', () => {
+    const message = inputField.value;
+    socket.send(message);
+    inputField.value = '';
+  });
+
+  const closeButton = document.getElementById('close');
+  closeButton.addEventListener('click', () => {
+    socket.close();
+  });
+</script>
+</body>
+</html>
